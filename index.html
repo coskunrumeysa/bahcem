@@ -227,7 +227,7 @@ dialog h3{font-family:"Fraunces",Georgia,serif;font-size:1.05rem;margin:20px 0 4
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 29V15" stroke="var(--moss)" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M16 18c-6-1-9-5-9-10 5 0 9 4 9 10z" fill="var(--leaf)" stroke="var(--moss)" stroke-width="1.6"/><path d="M16 15c1-5 5-8 10-8 0 5-4 8-10 8z" fill="var(--leaf)" stroke="var(--moss)" stroke-width="1.6"/></svg>
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M23 4.5a6.5 6.5 0 1 0 3.8 10.6A5.2 5.2 0 1 1 23 4.5z" fill="var(--honey)"/><path d="M14 29V19" stroke="var(--moss)" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M14 22c-5-.3-8-4-8-8.5 4.6 0 8 3.6 8 8.5z" fill="var(--leaf)" stroke="var(--moss)" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 19.5c.7-4.4 4-7 8.2-7 0 4.5-3.5 7.2-8.2 7z" fill="var(--leaf)" stroke="var(--moss)" stroke-width="1.6" stroke-linejoin="round"/></svg>
       Bahçem
     </div>
     <nav class="tabs" aria-label="Bölümler">
@@ -453,7 +453,10 @@ function backfill(){
 }
 
 /* ---------- sync (Supabase, optional) ---------- */
-const CFG = window.BAHCEM_CONFIG || {};
+const CFG = Object.assign({}, window.BAHCEM_CONFIG || {});
+/* Only the https://xxxx.supabase.co part is used, so a pasted /rest/v1/ or stray space can't break sync. */
+try { CFG.supabaseUrl = new URL(String(CFG.supabaseUrl || "").trim()).origin; } catch(e){ CFG.supabaseUrl = ""; }
+CFG.supabaseAnonKey = String(CFG.supabaseAnonKey || "").trim();
 const SB_ON = !!(CFG.supabaseUrl && CFG.supabaseAnonKey && window.supabase);
 let sb = null, session = null, syncing = false, lastSync = null, syncMsg = "", pushTimer = null;
 let meta = {dirty:{}, base:{}};

@@ -1,6 +1,6 @@
 // Bahçem service worker: uygulamayı telefonda saklar, internetsiz de açılmasını sağlar.
 // index.html'i değiştirdiğinde VERSION'ı bir artır ki telefonlar yeni sürümü alsın.
-const VERSION = "bahcem-v1";
+const VERSION = "bahcem-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -32,8 +32,22 @@ self.addEventListener("fetch", event => {
   // Veritabanı istekleri her zaman ağdan gider, asla önbelleğe alınmaz.
   if (url.hostname.endsWith("supabase.co") || url.hostname.endsWith("supabase.in")) return;
 
+  // config.js her zaman önce ağdan alınır, böylece değişiklikler hemen görünür.
+  if (url.origin === self.location.origin && url.pathname.endsWith("/config.js")) {
+    event.respondWith(
+      fetch(req).then(res => {
+        const copy = res.clone();
+        caches.open(VERSION).then(c => c.put(req, copy));
+        return res;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+
   // Sayfanın kendisi: önce ağ (güncel sürüm), ağ yoksa önbellek.
-  if (req.mode === "navigate") {
+  const scopePath = new URL(self.registration.scope).pathname;
+  const isApp = url.pathname === scopePath || url.pathname === scopePath + "index.html";
+  if (req.mode === "navigate" && isApp) {
     event.respondWith(
       fetch(req).then(res => {
         const copy = res.clone();
