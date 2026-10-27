@@ -1,14 +1,14 @@
 // Bahçem service worker: uygulamayı telefonda saklar, internetsiz de açılmasını sağlar.
 // index.html'i değiştirdiğinde VERSION'ı bir artır ki telefonlar yeni sürümü alsın.
-const VERSION = "bahcem-v3";
+const VERSION = "bahcem-v5";
 const SHELL = [
   "./",
   "./index.html",
   "./config.js",
   "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/favicon.svg",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./favicon.svg",
   "https://cdn.jsdelivr.net/npm/adhan@4.4.3/lib/bundles/adhan.umd.min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/dist/umd/supabase.js"
 ];
