@@ -90,9 +90,9 @@ nav.tabs a[aria-current="page"]{background:var(--leaf-2);color:var(--ink)}
 .plot svg{width:100%;max-width:140px;height:auto;display:block;margin:0 auto}
 .plot .name{font-family:"Fraunces",Georgia,serif;font-size:1rem;margin-top:2px;line-height:1.2}
 .plot .stage{font-size:.78rem;color:var(--ink-2);line-height:1.3}
-.ghost{opacity:.13;filter:grayscale(1)}
-:root[data-theme="dark"] .ghost{opacity:.08}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ghost{opacity:.08}}
+.plant-ghost{opacity:.13;filter:grayscale(1)}
+:root[data-theme="dark"] .plant-ghost{opacity:.08}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .plant-ghost{opacity:.08}}
 .grow{transform-origin:50% 100%;transform-box:fill-box;animation:grow 1s cubic-bezier(.2,.8,.2,1) both}
 @keyframes grow{from{transform:scaleY(.3);opacity:0}to{transform:none;opacity:1}}
 .fruit{animation:pop .5s .5s cubic-bezier(.3,1.6,.5,1) both;transform-box:fill-box;transform-origin:50% 50%}
@@ -143,6 +143,12 @@ nav.tabs a[aria-current="page"]{background:var(--leaf-2);color:var(--ink)}
 .late{color:var(--rust);font-weight:500}
 .del{background:none;border:0;color:var(--ink-2);padding:4px 6px;border-radius:8px;opacity:.6;font-size:1.1rem;line-height:1}
 .del:hover{opacity:1}
+.del.edit{display:grid;place-items:center;padding:5px}
+.item.editing{display:block}
+.edit-task{display:grid;gap:8px}
+.edit-task .field{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:9px 12px;min-width:0;width:100%}
+.edit-row{display:flex;flex-wrap:wrap;gap:8px}
+.edit-row .field{width:auto;flex:1 1 140px}
 .empty{color:var(--ink-2);font-style:italic;font-family:"Fraunces",Georgia,serif;padding:8px 2px;margin:0}
 
 .add{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
@@ -168,6 +174,10 @@ nav.tabs a[aria-current="page"]{background:var(--leaf-2);color:var(--ink)}
 .book .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem;color:var(--ink-2)}
 .book .row input{width:88px;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:7px 10px}
 .book .row .spacer{flex:1}
+.fix{margin-top:8px;font-size:.88rem;color:var(--ink-2)}
+.fix summary{cursor:pointer;width:max-content}
+.fix .row{margin-top:8px}
+.fix input[type="date"]{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:6px 8px}
 
 /* Reports */
 .rep-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:18px}
@@ -309,6 +319,8 @@ dialog h3{font-family:"Fraunces",Georgia,serif;font-size:1.05rem;margin:20px 0 4
         <input type="text" id="bAuthor" placeholder="Yazar" autocomplete="off" style="flex:1 1 160px">
         <label class="sr" for="bPages">Sayfa sayısı</label>
         <input type="number" id="bPages" placeholder="Sayfa" min="1" inputmode="numeric" required>
+        <label class="sr" for="bStart">Kaldığın sayfa</label>
+        <input type="number" id="bStart" placeholder="Kaldığın sayfa" min="0" inputmode="numeric" title="Kitaba yeni başlamadıysan şu an kaçıncı sayfada olduğun. Okuma olarak sayılmaz." style="width:150px">
         <select id="bStatus" aria-label="Durum"><option value="reading">Okuyorum</option><option value="todo">Okunacak</option></select>
         <button class="btn" type="submit">Ekle</button>
       </form>
@@ -684,7 +696,7 @@ function tulip(s){
 function plantSVG(kind, level){
   const fn = {namaz:appleTree, okuma:lavender, vakif:olive, yl:sunflower, gel:bamboo, ki:tulip}[kind];
   const full = kind === "namaz" ? 5 : 3;
-  const ghost = level < full ? `<g class="ghost">${fn(full)}</g>` : "";
+  const ghost = level < full ? `<g class="plant-ghost">${fn(full)}</g>` : "";
   return `<svg viewBox="0 0 120 130" aria-hidden="true">${ghost}<g class="grow">${fn(level)}</g><path d="M14 122c20-4 72-4 92 0" fill="none" stroke="var(--ink-2)" stroke-width="1.6" stroke-linecap="round" opacity=".5"/></svg>`;
 }
 const STAGES = ["Tohum","Fide","Filiz","Çiçekte"];
@@ -761,11 +773,29 @@ function dueLabel(due){
   if (due === keyOf(addDays(new Date(),1))) return `<span>Yarın</span>`;
   return `<span>${fmtDate(due)}</span>`;
 }
+let editingTask = null;
+const editingActive = () => !!(editingTask && document.activeElement && document.activeElement.closest && document.activeElement.closest("[data-edittask]"));
+const PENCIL = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
+function taskEditLi(t){
+  return `<li class="item editing"><form class="edit-task" data-edittask="${t.id}">
+    <label class="sr" for="et-t-${t.id}">İş</label>
+    <input id="et-t-${t.id}" type="text" class="field" value="${esc(t.title)}" required autocomplete="off">
+    <div class="edit-row">
+      <label class="sr" for="et-a-${t.id}">Alan</label>
+      <select id="et-a-${t.id}" class="field">${AREA_KEYS.map(a => `<option value="${a}"${a===t.area?" selected":""}>${AREAS[a]}</option>`).join("")}</select>
+      <label class="sr" for="et-d-${t.id}">Tarih</label>
+      <input id="et-d-${t.id}" type="date" class="field" value="${t.due||""}">
+      <button class="btn small" type="submit">Kaydet</button>
+      <button class="btn small ghost" type="button" data-canceledit>Vazgeç</button>
+    </div></form></li>`;
+}
 function taskLi(t){
+  if (editingTask === t.id) return taskEditLi(t);
   return `<li class="item${t.done?" is-done":""}">
     <button type="button" class="check" role="checkbox" aria-checked="${!!t.done}" aria-label="${esc(t.title)} tamamlandı" data-toggle="${t.id}"></button>
     <div class="body"><div class="title">${esc(t.title)}</div>
       <div class="meta"><span class="tag ${t.area}">${AREAS[t.area]}</span>${dueLabel(t.due)}</div></div>
+    <button type="button" class="del edit" aria-label="${esc(t.title)} işini düzenle" data-edit="${t.id}">${PENCIL}</button>
     <button type="button" class="del" aria-label="${esc(t.title)} işini sil" data-deltask="${t.id}">×</button></li>`;
 }
 function renderToday(){
@@ -773,7 +803,7 @@ function renderToday(){
   const tk = todayKey();
   const list = S.tasks.items.filter(t => !t.done && (!t.due || t.due <= tk)).sort((a,b) => (a.due||"9") < (b.due||"9") ? -1 : 1);
   const doneToday = S.tasks.items.filter(t => t.done && t.doneAt === tk);
-  $("#todayTasks").innerHTML = list.length || doneToday.length ? list.map(taskLi).join("") + doneToday.map(taskLi).join("")
+  if (!editingActive()) $("#todayTasks").innerHTML = list.length || doneToday.length ? list.map(taskLi).join("") + doneToday.map(taskLi).join("")
     : `<li class="empty">Bugün için bekleyen iş yok. Yukarıdan ekleyebilirsin.</li>`;
   const reading = S.books.items.filter(b => b.status === "reading");
   $("#todayBooks").innerHTML = reading.length ? reading.map(b => {
@@ -786,6 +816,7 @@ function renderToday(){
   }).join("") : `<p class="empty">Şu an okuduğun bir kitap yok. Kitaplar bölümünden ekleyebilirsin.</p>`;
 }
 function renderTasks(){
+  if (editingActive()) return;
   const tk = todayKey(), weekEnd = keyOf(addDays(new Date(),7));
   const items = S.tasks.items.filter(t => areaFilter === "all" || t.area === areaFilter);
   const open = items.filter(t => !t.done).sort((a,b) => (a.due||"9") < (b.due||"9") ? -1 : 1);
@@ -800,6 +831,14 @@ function renderTasks(){
   $("#taskGroups").innerHTML = groups.length ? groups.map(([n,l]) => `<h3 class="group-title">${n}</h3><ul class="list">${l.map(taskLi).join("")}</ul>`).join("")
     : `<p class="empty">Burada henüz iş yok. İlk işini yukarıdan ekle.</p>`;
   $$("#areaFilter .chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.area === areaFilter)));
+}
+function fixLogHTML(b){
+  const tk = todayKey(), cur = (b.log||{})[tk] || 0;
+  return `<details class="fix"><summary>Okuma kaydını düzelt</summary>
+    <form class="row" data-fixlog="${b.id}">
+      <label class="sr" for="fd-${b.id}">Gün</label><input id="fd-${b.id}" type="date" max="${tk}" value="${tk}" data-logsrc="${b.id}">
+      <label for="fn-${b.id}">o gün okunan</label><input id="fn-${b.id}" type="number" min="0" inputmode="numeric" value="${cur}">
+      <span>sayfa</span><button class="btn small ghost" type="submit">Düzelt</button></form></details>`;
 }
 function renderBooks(){
   const html = [["Okuyorum","reading"],["Okunacak","todo"],["Bitti","done"]].map(([n,st]) => {
@@ -816,7 +855,7 @@ function renderBooks(){
       else row = `<div class="row"><span>${b.pages} sayfa${b.finishedAt?`, ${fmtDate(b.finishedAt)} tarihinde bitti`:""}</span></div>`;
       return `<div class="book"><div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><div class="bt">${esc(b.title)}</div>${b.author?`<div class="ba">${esc(b.author)}</div>`:""}</div>
         <button type="button" class="del" aria-label="${esc(b.title)} kitabını sil" data-delbook="${b.id}">×</button></div>
-        ${st !== "todo" ? `<div class="vine"><span style="width:${pct}%"></span></div>` : ""}${row}</div>`;
+        ${st !== "todo" ? `<div class="vine"><span style="width:${pct}%"></span></div>` : ""}${row}${st !== "todo" ? fixLogHTML(b) : ""}</div>`;
     }).join("");
   }).join("");
   $("#bookGroups").innerHTML = html || `<p class="empty">Rafın boş. İlk kitabını yukarıdan ekle.</p>`;
@@ -963,6 +1002,14 @@ document.addEventListener("click", e => {
     else { t.done = true; t.doneAt = todayKey(); const d = statDay(t.doneAt); d.t[t.area] = (d.t[t.area]||0) + 1; }
     commit("tasks","stats"); return;
   }
+  const ed = e.target.closest("[data-edit]");
+  if (ed){
+    editingTask = ed.dataset.edit; renderToday(); renderTasks();
+    const inp = document.querySelector(`#view-${document.querySelector(".view.active").id.slice(5)} [data-edittask="${editingTask}"] input[type="text"]`);
+    if (inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+    return;
+  }
+  if (e.target.closest("[data-canceledit]")){ editingTask = null; renderToday(); renderTasks(); return; }
   const dt = e.target.closest("[data-deltask]");
   if (dt){ S.tasks.items = S.tasks.items.filter(x => x.id !== dt.dataset.deltask); commit("tasks"); toast("İş silindi, raporlardaki kaydı duruyor."); return; }
   const dbk = e.target.closest("[data-delbook]");
@@ -985,8 +1032,26 @@ document.addEventListener("submit", e => {
   if (f.id === "bookForm"){
     const title = $("#bTitle").value.trim(), pages = parseInt($("#bPages").value,10);
     if (!title || !(pages > 0)) return;
-    S.books.items.push({id:uid(), title, author: $("#bAuthor").value.trim(), pages, current:0, status: $("#bStatus").value, log:{}, finishedAt:""});
+    const start = Math.min(pages, Math.max(0, parseInt($("#bStart").value,10) || 0));
+    S.books.items.push({id:uid(), title, author: $("#bAuthor").value.trim(), pages, current:start, status: $("#bStatus").value, log:{}, finishedAt:""});
     f.reset(); commit("books"); return;
+  }
+  if (f.dataset.edittask){
+    const t = S.tasks.items.find(x => x.id === f.dataset.edittask);
+    const [ti, ar, du] = [f.querySelector('input[type="text"]'), f.querySelector("select"), f.querySelector('input[type="date"]')];
+    const title = ti.value.trim();
+    if (!t || !title) return;
+    const ks = ["tasks"];
+    if (t.done && t.doneAt && ar.value !== t.area){
+      const d = statDay(t.doneAt);
+      d.t[t.area] = Math.max(0, (d.t[t.area]||0) - 1);
+      d.t[ar.value] = (d.t[ar.value]||0) + 1;
+      ks.push("stats");
+    }
+    t.title = title; t.area = ar.value; t.due = du.value || "";
+    editingTask = null;
+    commit(...ks); toast("İş güncellendi.");
+    return;
   }
   if (f.dataset.readadd){
     const b = S.books.items.find(x => x.id === f.dataset.readadd), n = parseInt(f.querySelector("input").value,10);
@@ -995,8 +1060,34 @@ document.addEventListener("submit", e => {
   }
   if (f.dataset.setpage){
     const b = S.books.items.find(x => x.id === f.dataset.setpage), n = parseInt(f.querySelector("input").value,10);
-    if (b && n >= 0){ if (n > (b.current||0)) readPages(b, n - (b.current||0)); else b.current = Math.min(n, b.pages); commit("books","stats"); toast("Sayfa kaydedildi."); }
+    if (b && n >= 0){
+      const fresh = !Object.values(b.log || {}).some(v => v > 0);
+      if (fresh){ b.current = Math.min(n, b.pages); commit("books"); toast("Başlangıç sayfan kaydedildi, okuma olarak sayılmadı."); }
+      else { if (n > (b.current||0)) readPages(b, n - (b.current||0)); else b.current = Math.min(n, b.pages); commit("books","stats"); toast("Sayfa kaydedildi."); }
+    }
+    return;
   }
+  if (f.dataset.fixlog){
+    const b = S.books.items.find(x => x.id === f.dataset.fixlog);
+    const k = f.querySelector('input[type="date"]').value, n = parseInt(f.querySelector('input[type="number"]').value,10);
+    if (!b || !k || !(n >= 0) || k > todayKey()) return;
+    b.log = b.log || {};
+    const old = b.log[k] || 0;
+    if (n > 0) b.log[k] = n; else delete b.log[k];
+    const d = statDay(k); d.pg = Math.max(0, (d.pg||0) + (n - old));
+    commit("books","stats"); toast(fmtDate(k)+" için "+n+" sayfa olarak düzeltildi.");
+  }
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && editingTask){ editingTask = null; renderToday(); renderTasks(); }
+});
+document.addEventListener("change", e => {
+  const el = e.target.closest && e.target.closest("[data-logsrc]");
+  if (!el) return;
+  const b = S.books.items.find(x => x.id === el.dataset.logsrc);
+  const num = el.form && el.form.querySelector('input[type="number"]');
+  if (b && num) num.value = (b.log||{})[el.value] || 0;
 });
 
 /* ---------- tabs ---------- */
