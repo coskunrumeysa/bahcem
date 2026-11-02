@@ -1,6 +1,6 @@
 // Bahçem service worker: uygulamayı telefonda saklar, internetsiz de açılmasını sağlar.
 // index.html'i değiştirdiğinde VERSION'ı bir artır ki telefonlar yeni sürümü alsın.
-const VERSION = "bahcem-v7";
+const VERSION = "bahcem-v8";
 const SHELL = [
   "./",
   "./index.html",

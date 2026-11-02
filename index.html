@@ -145,6 +145,41 @@ nav.tabs a[aria-current="page"]{background:var(--leaf-2);color:var(--ink)}
 .del:hover{opacity:1}
 .del.edit{display:grid;place-items:center;padding:5px}
 .item.editing{display:block}
+.board-sec{margin-top:22px}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+@media (max-width:980px){.board{grid-template-columns:repeat(4,minmax(260px,82vw));overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;margin:0 -14px;padding-left:14px;padding-right:14px;scroll-padding:0 14px}.kcol{scroll-snap-align:start}}
+.kcol{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:120px;transition:background .15s,border-color .15s}
+.kcol.drop{background:var(--leaf-2);border-color:var(--moss)}
+.khead{display:flex;align-items:center;gap:8px;font-family:"Fraunces",Georgia,serif;font-size:1.02rem;padding:2px 4px 8px}
+.kdot{width:10px;height:10px;border-radius:50%;flex:none}
+.kcount{margin-left:auto;font-family:"Figtree",system-ui,sans-serif;font-size:.8rem;color:var(--ink-2);background:var(--paper-2);border-radius:999px;padding:0 8px}
+.kcol .list{display:grid;gap:8px}
+.kcol .item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 8px 10px 10px;box-shadow:var(--shadow)}
+.kcol .item[draggable="true"]{cursor:grab}
+.kcol .item{position:relative;gap:10px}
+.kcol .item > .del{position:absolute;top:6px;right:4px;padding:4px}
+.kcol .item > .del.edit{right:30px}
+.kcol .item .title{padding-right:54px}
+.kcol .item.editing{padding:10px}
+.kcol .item.dragging{opacity:.4}
+.kcol .meta .tag{display:none}
+.kcol .kempty{font-size:.85rem;color:var(--ink-2);font-style:italic;padding:4px 4px 8px;font-family:"Fraunces",Georgia,serif}
+.kadd{margin-top:8px}
+.kadd input{width:100%;border:1px dashed var(--line);background:transparent;border-radius:10px;padding:8px 10px}
+.kadd input:focus{border-style:solid;background:var(--card)}
+.subs{margin-top:8px}
+.subs-toggle{background:none;border:0;padding:2px 0;color:var(--ink-2);font-size:.82rem;display:inline-flex;align-items:center;gap:6px;text-align:left;white-space:nowrap}
+.subs-bar{display:inline-block;width:46px;height:5px;border-radius:99px;background:var(--paper-2);overflow:hidden;vertical-align:middle}
+.subs-bar span{display:block;height:100%;background:var(--moss)}
+.subs-toggle.all{color:var(--moss);font-weight:600}
+.sublist{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:2px}
+.sub{display:flex;align-items:center;gap:8px;font-size:.92rem;padding:3px 0}
+.sub .check{width:18px;height:18px;border-radius:5px;margin:0}
+.sub .check[aria-checked="true"]::after{width:7px;height:4px}
+.sub.done .st{text-decoration:line-through;color:var(--ink-2)}
+.sub .st{flex:1;min-width:0;word-wrap:break-word}
+.sub .del{font-size:1rem;padding:2px 4px}
+.subadd input{width:100%;border:1px dashed var(--line);background:transparent;border-radius:8px;padding:6px 8px;font-size:.9rem;margin-top:4px}
 .edit-task{display:grid;gap:8px}
 .edit-task .field{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:9px 12px;min-width:0;width:100%}
 .edit-row{display:flex;flex-wrap:wrap;gap:8px}
@@ -262,7 +297,6 @@ dialog h3{font-family:"Fraunces",Georgia,serif;font-size:1.05rem;margin:20px 0 4
       <div class="garden" id="garden" aria-label="Bahçen"></div>
     </div>
     <div class="grid two">
-      <div class="grid">
         <div class="section">
           <h2>Namaz</h2>
           <p class="hint" id="cityHint">Kıldığın vakte dokun.</p>
@@ -271,24 +305,16 @@ dialog h3{font-family:"Fraunces",Georgia,serif;font-size:1.05rem;margin:20px 0 4
           <div class="week" id="week" aria-label="Son yedi günün namaz kaydı"></div>
           <p class="week-hint">İşaretlemeyi unuttuğun bir vakit olursa yukarıdaki noktalara dokunarak geçmiş günleri de düzeltebilirsin.</p>
         </div>
-        <div class="section">
-          <h2>Bugünün işleri</h2>
-          <p class="hint">Bugüne, geçmişe ya da tarihsiz kalan işlerin.</p>
-          <form class="add" id="quickTask">
-            <label class="sr" for="qtTitle">Yeni iş</label>
-            <input type="text" id="qtTitle" placeholder="Hızlıca bir iş ekle" autocomplete="off">
-            <label class="sr" for="qtArea">Alan</label>
-            <select id="qtArea" class="areaSel"></select>
-            <button class="btn" type="submit">Ekle</button>
-          </form>
-          <ul class="list" id="todayTasks"></ul>
-        </div>
-      </div>
       <div class="section">
         <h2>Okuma</h2>
         <p class="hint">Bugün kaç sayfa okuduğunu ekle.</p>
         <div id="todayBooks"></div>
       </div>
+    </div>
+    <div class="section board-sec">
+      <h2>Bugünün işleri</h2>
+      <p class="hint">Bugüne, geçmişe ya da tarihsiz kalan işlerin, alanlarına göre. Bilgisayarda kartları sürükleyerek başka bir alana taşıyabilirsin.</p>
+      <div class="board" id="todayBoard"></div>
     </div>
   </section>
 
@@ -476,7 +502,7 @@ try { const m = JSON.parse(localStorage.getItem("bahcem:_sync") || "null"); if (
 const saveMeta = () => { try { localStorage.setItem("bahcem:_sync", JSON.stringify(meta)); } catch(e){} };
 function commit(...ks){
   ks.forEach(k => { saveLocal(k); meta.dirty[k] = true; });
-  saveMeta(); render();
+  saveMeta(); forceRender = true; render(); forceRender = false; doRefocus();
   if (session){ clearTimeout(pushTimer); pushTimer = setTimeout(syncNow, 1200); }
 }
 /* Merge used when both sides changed (or on import): nothing recorded on either side is lost. */
@@ -774,7 +800,37 @@ function dueLabel(due){
   return `<span>${fmtDate(due)}</span>`;
 }
 let editingTask = null;
-const editingActive = () => !!(editingTask && document.activeElement && document.activeElement.closest && document.activeElement.closest("[data-edittask]"));
+let forceRender = false;
+/* Background (sync) renders must not wipe something the user is typing in a task list. */
+const editingActive = () => {
+  if (forceRender) return false;
+  const a = document.activeElement;
+  return !!(a && a.matches && a.matches("input,select,textarea") && a.closest("#todayBoard, #taskGroups"));
+};
+const openSubs = new Set();
+let refocus = null;
+function rerenderLists(){ forceRender = true; renderToday(); renderTasks(); forceRender = false; doRefocus(); }
+function doRefocus(){
+  if (!refocus) return;
+  const el = document.querySelector(".view.active " + refocus) || document.querySelector(refocus);
+  refocus = null;
+  if (el){ el.focus(); if (el.setSelectionRange && el.value) el.setSelectionRange(el.value.length, el.value.length); }
+}
+function subsHTML(t){
+  const subs = t.subs || [];
+  const n = subs.filter(x => x.done).length, open = openSubs.has(t.id);
+  const label = subs.length ? `${n}/${subs.length}` : "Alt görev ekle";
+  let h = `<div class="subs"><button type="button" class="subs-toggle${subs.length && n === subs.length ? " all" : ""}" data-subtoggle="${t.id}" aria-expanded="${open}">
+    ${subs.length ? `<span class="subs-bar"><span style="width:${Math.round(100*n/subs.length)}%"></span></span>` : "＋"} ${label}</button>`;
+  if (open){
+    h += `<ul class="sublist">` + subs.map(x => `<li class="sub${x.done?" done":""}">
+      <button type="button" class="check" role="checkbox" aria-checked="${!!x.done}" aria-label="${esc(x.title)} tamamlandı" data-subcheck="${t.id}" data-sub="${x.id}"></button>
+      <span class="st">${esc(x.title)}</span>
+      <button type="button" class="del" aria-label="${esc(x.title)} alt görevini sil" data-subdel="${t.id}" data-sub="${x.id}">×</button></li>`).join("") + `</ul>
+      <form class="subadd" data-subadd="${t.id}"><label class="sr" for="sa-${t.id}">Yeni alt görev</label><input id="sa-${t.id}" type="text" placeholder="+ Alt görev ekle" autocomplete="off"></form>`;
+  }
+  return h + `</div>`;
+}
 const PENCIL = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
 function taskEditLi(t){
   return `<li class="item editing"><form class="edit-task" data-edittask="${t.id}">
@@ -789,12 +845,12 @@ function taskEditLi(t){
       <button class="btn small ghost" type="button" data-canceledit>Vazgeç</button>
     </div></form></li>`;
 }
-function taskLi(t){
+function taskLi(t, drag){
   if (editingTask === t.id) return taskEditLi(t);
-  return `<li class="item${t.done?" is-done":""}">
+  return `<li class="item${t.done?" is-done":""}"${drag ? ` draggable="true" data-dragid="${t.id}"` : ""}>
     <button type="button" class="check" role="checkbox" aria-checked="${!!t.done}" aria-label="${esc(t.title)} tamamlandı" data-toggle="${t.id}"></button>
     <div class="body"><div class="title">${esc(t.title)}</div>
-      <div class="meta"><span class="tag ${t.area}">${AREAS[t.area]}</span>${dueLabel(t.due)}</div></div>
+      <div class="meta"><span class="tag ${t.area}">${AREAS[t.area]}</span>${dueLabel(t.due)}</div>${subsHTML(t)}</div>
     <button type="button" class="del edit" aria-label="${esc(t.title)} işini düzenle" data-edit="${t.id}">${PENCIL}</button>
     <button type="button" class="del" aria-label="${esc(t.title)} işini sil" data-deltask="${t.id}">×</button></li>`;
 }
@@ -803,8 +859,15 @@ function renderToday(){
   const tk = todayKey();
   const list = S.tasks.items.filter(t => !t.done && (!t.due || t.due <= tk)).sort((a,b) => (a.due||"9") < (b.due||"9") ? -1 : 1);
   const doneToday = S.tasks.items.filter(t => t.done && t.doneAt === tk);
-  if (!editingActive()) $("#todayTasks").innerHTML = list.length || doneToday.length ? list.map(taskLi).join("") + doneToday.map(taskLi).join("")
-    : `<li class="empty">Bugün için bekleyen iş yok. Yukarıdan ekleyebilirsin.</li>`;
+  if (!editingActive()){
+    const canDrag = window.matchMedia && matchMedia("(pointer: fine)").matches;
+    $("#todayBoard").innerHTML = AREA_KEYS.map(a => {
+      const open = list.filter(t => t.area === a), done = doneToday.filter(t => t.area === a);
+      return `<div class="kcol" data-col="${a}"><div class="khead"><span class="kdot" style="background:${AREA_COLOR[a]}"></span>${AREAS[a]}<span class="kcount">${open.length}</span></div>
+        ${open.length || done.length ? `<ul class="list">${open.map(t => taskLi(t, canDrag)).join("")}${done.map(t => taskLi(t, canDrag)).join("")}</ul>` : `<div class="kempty">Bugün bu alanda iş yok.</div>`}
+        <form class="kadd" data-kadd="${a}"><label class="sr" for="ka-${a}">${AREAS[a]} için yeni iş</label><input id="ka-${a}" type="text" placeholder="+ İş ekle" autocomplete="off"></form></div>`;
+    }).join("");
+  }
   const reading = S.books.items.filter(b => b.status === "reading");
   $("#todayBooks").innerHTML = reading.length ? reading.map(b => {
     const pct = Math.round(100*(b.current||0)/b.pages), todayP = (b.log && b.log[tk]) || 0;
@@ -1002,14 +1065,19 @@ document.addEventListener("click", e => {
     else { t.done = true; t.doneAt = todayKey(); const d = statDay(t.doneAt); d.t[t.area] = (d.t[t.area]||0) + 1; }
     commit("tasks","stats"); return;
   }
+  const sg = e.target.closest("[data-subtoggle]");
+  if (sg){ const id = sg.dataset.subtoggle; if (openSubs.has(id)) openSubs.delete(id); else { openSubs.add(id); refocus = `#sa-${id}`; } rerenderLists(); return; }
+  const sc = e.target.closest("[data-subcheck]");
+  if (sc){ const t = S.tasks.items.find(x => x.id === sc.dataset.subcheck), x = t && (t.subs||[]).find(y => y.id === sc.dataset.sub);
+    if (x){ x.done = !x.done; commit("tasks"); if (!t.done && t.subs.every(y => y.done)) toast("Bütün alt görevler bitti. İşi de tamamlandı olarak işaretleyebilirsin."); } return; }
+  const sd = e.target.closest("[data-subdel]");
+  if (sd){ const t = S.tasks.items.find(x => x.id === sd.dataset.subdel); if (t){ t.subs = (t.subs||[]).filter(y => y.id !== sd.dataset.sub); commit("tasks"); } return; }
   const ed = e.target.closest("[data-edit]");
   if (ed){
-    editingTask = ed.dataset.edit; renderToday(); renderTasks();
-    const inp = document.querySelector(`#view-${document.querySelector(".view.active").id.slice(5)} [data-edittask="${editingTask}"] input[type="text"]`);
-    if (inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+    editingTask = ed.dataset.edit; refocus = `#et-t-${editingTask}`; rerenderLists();
     return;
   }
-  if (e.target.closest("[data-canceledit]")){ editingTask = null; renderToday(); renderTasks(); return; }
+  if (e.target.closest("[data-canceledit]")){ editingTask = null; rerenderLists(); return; }
   const dt = e.target.closest("[data-deltask]");
   if (dt){ S.tasks.items = S.tasks.items.filter(x => x.id !== dt.dataset.deltask); commit("tasks"); toast("İş silindi, raporlardaki kaydı duruyor."); return; }
   const dbk = e.target.closest("[data-delbook]");
@@ -1027,7 +1095,16 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("submit", e => {
   const f = e.target; e.preventDefault();
-  if (f.id === "quickTask"){ addTask($("#qtTitle").value, $("#qtArea").value, ""); $("#qtTitle").value = ""; return; }
+  if (f.dataset.kadd){
+    const v = f.querySelector("input").value;
+    if (v.trim()){ refocus = `#ka-${f.dataset.kadd}`; addTask(v, f.dataset.kadd, ""); }
+    return;
+  }
+  if (f.dataset.subadd){
+    const t = S.tasks.items.find(x => x.id === f.dataset.subadd), v = f.querySelector("input").value.trim();
+    if (t && v){ t.subs = t.subs || []; t.subs.push({id:uid(), title:v, done:false}); refocus = `#sa-${t.id}`; commit("tasks"); }
+    return;
+  }
   if (f.id === "taskForm"){ addTask($("#tTitle").value, $("#tArea").value, $("#tDue").value); $("#tTitle").value = ""; $("#tDue").value = ""; $("#tTitle").focus(); return; }
   if (f.id === "bookForm"){
     const title = $("#bTitle").value.trim(), pages = parseInt($("#bPages").value,10);
@@ -1079,8 +1156,34 @@ document.addEventListener("submit", e => {
   }
 });
 
+let dragId = null;
+document.addEventListener("dragstart", e => {
+  const li = e.target.closest && e.target.closest("[data-dragid]");
+  if (!li) return;
+  dragId = li.dataset.dragid; li.classList.add("dragging");
+  try { e.dataTransfer.setData("text/plain", dragId); e.dataTransfer.effectAllowed = "move"; } catch(err){}
+});
+document.addEventListener("dragend", () => { dragId = null; $$(".dragging").forEach(x => x.classList.remove("dragging")); $$(".kcol.drop").forEach(x => x.classList.remove("drop")); });
+document.addEventListener("dragover", e => {
+  const col = dragId && e.target.closest && e.target.closest(".kcol");
+  if (!col) return;
+  e.preventDefault();
+  $$(".kcol.drop").forEach(x => { if (x !== col) x.classList.remove("drop"); });
+  col.classList.add("drop");
+});
+document.addEventListener("drop", e => {
+  const col = dragId && e.target.closest && e.target.closest(".kcol");
+  if (!col) return;
+  e.preventDefault();
+  const t = S.tasks.items.find(x => x.id === dragId), a = col.dataset.col;
+  dragId = null;
+  if (!t || t.area === a) return;
+  const ks = ["tasks"];
+  if (t.done && t.doneAt){ const d = statDay(t.doneAt); d.t[t.area] = Math.max(0, (d.t[t.area]||0) - 1); d.t[a] = (d.t[a]||0) + 1; ks.push("stats"); }
+  t.area = a; commit(...ks); toast(AREAS[a] + " alanına taşındı.");
+});
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && editingTask){ editingTask = null; renderToday(); renderTasks(); }
+  if (e.key === "Escape" && editingTask){ editingTask = null; rerenderLists(); }
 });
 document.addEventListener("change", e => {
   const el = e.target.closest && e.target.closest("[data-logsrc]");
